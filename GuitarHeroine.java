@@ -18,6 +18,7 @@ public class GuitarString {
     private final int samplingRate = 44100;
     private RingBuffer buffer;
     private int ticLog = 0;
+    private double energyDecayFactor = 0.994;
 
     /**
      * Create a guitar string of the given frequency, using a sampling rate of
@@ -82,6 +83,24 @@ public class GuitarString {
      * Advances the simulation by one time step.
      */
     public void tic() {
+        double newSample = 0;
+        
+        double firstSample = 0;
+        double secondSample = 0;
+        try {
+            firstSample = buffer.dequeue();
+            secondSample = buffer.peek();
+        } catch (RingBuffer.BufferEmptyException ex) {
+            Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        newSample = energyDecayFactor * (0.5 * firstSample * secondSample);
+        
+        try {
+            buffer.enqueue(newSample);
+        } catch (RingBuffer.BufferFullException ex) {
+            Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         ticLog++;
     }
 
