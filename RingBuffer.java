@@ -104,7 +104,7 @@ public class RingBuffer {
     /**
      * Special Exception for when the buffer is full.
      */
-    private class BufferFullException extends Exception {
+    public class BufferFullException extends Exception {
         
         public BufferFullException() {
             
@@ -118,7 +118,7 @@ public class RingBuffer {
     /**
      * Special exception for when the buffer is empty.
      */
-    private class BufferEmptyException extends Exception {
+    public class BufferEmptyException extends Exception {
         
         public BufferEmptyException() {
             
