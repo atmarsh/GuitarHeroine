@@ -5,24 +5,25 @@
  */
 package GuitarHeroine;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author atmarsh
  */
 public class RingBuffer {
     
-    private double [] buffer;//array where items in buffer are stored
-    private int firstIndex;//index of first value
-    private int lastIndex;//index of last value
+    private ArrayList<Double> buffer;//array where items in buffer are stored
+    private int maxSize;
+    
     
     /**
      * Create an empty ring buffer, with a given maximum capacity
      * @param capacity the maximum size of the ring buffer
      */
     public RingBuffer(int capacity) {
-        buffer = new double[capacity];
-        firstIndex = 0;
-        lastIndex = 0;
+        buffer = new ArrayList<>();
+        maxSize = capacity;
     }
     
     /**
@@ -30,7 +31,15 @@ public class RingBuffer {
      * @return number of items in the buffer
      */
     public int size() {
-        return lastIndex - firstIndex;
+        return buffer.size();
+    }
+    
+    /**
+     * Returns the maximum number of values that can be stored in the Ring Buffer
+     * @return size of the buffer
+     */
+    public int capacity() {
+        return maxSize;
     }
     
     /**
@@ -46,86 +55,55 @@ public class RingBuffer {
      * @return true if full, false if not
      */
     public boolean isFull() {
-        return size() == buffer.length;
+        return size() == maxSize;
     }
     
     /**
      * Adds an item to the queue
      * @param newValue item to be added to the queue
      */
-    public void enqueue(double newValue) throws BufferFullException {
+    public void enqueue(double newValue) {
         if(isFull()) {
-            throw new BufferFullException();
+            System.err.println("Full");
+            return;
         }
-        buffer[lastIndex] = newValue;
-        lastIndex++;
+        buffer.add(newValue);
     }
     
     /**
      * Delete and returns the first item from the queue
      * @return the first item in the queue
      */
-    public double dequeue() throws BufferEmptyException{
+    public double dequeue() {
         if(isEmpty()) {
-            throw new BufferEmptyException();
+            System.err.println("Empty");
+            return 0;
         }
-        double firstItem = peek();
-        firstIndex++;
-        checkIndexes();
-        return firstItem;
+        double result = peek();
+        buffer.remove(result);
+        return result;
     }
     
     /**
      * Return (but does not delete) the first item in the queue
      * @return the first item in the queue
      */
-    public double peek() throws BufferEmptyException{
+    public double peek() {
         if(isEmpty()) {
-            throw new BufferEmptyException();
+            System.err.println("Empty");
+            return 0;
         }
-        return buffer[firstIndex];
-    }
-
-    /**
-     * This method checks to make sure that both indexes are inside of the scope 
-     * of the buffer. If one index does not exist in the buffer, the index is 
-     * wrapped around.
-     */
-    private void checkIndexes() {
-        if(firstIndex >= buffer.length) {
-            firstIndex -= buffer.length;
-        }
-        
-        if(lastIndex >= buffer.length) {
-            lastIndex -= buffer.length;
-        }
+        return buffer.get(0);
     }
     
     /**
-     * Special Exception for when the buffer is full.
+     * Prints the entire buffer to the terminal window. Useful for debugging.
      */
-    public class BufferFullException extends Exception {
-        
-        public BufferFullException() {
-            
+    public void printBuffer() {
+        System.out.print("[");
+        for(double d : buffer) {
+            System.out.print(d + ", ");
         }
-        
-        public BufferFullException(String message) {
-            super(message);
-        }
-    }
-    
-    /**
-     * Special exception for when the buffer is empty.
-     */
-    public class BufferEmptyException extends Exception {
-        
-        public BufferEmptyException() {
-            
-        }
-        
-        public BufferEmptyException(String message) {
-            super(message);
-        }
+        System.out.println("[");
     }
 }
