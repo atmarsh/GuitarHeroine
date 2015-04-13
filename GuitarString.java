@@ -15,10 +15,11 @@ import java.util.logging.Logger;
  */
 public class GuitarString {
 
-    private final int samplingRate = 44100;
+    private final double samplingRate = 44100;
     private RingBuffer buffer;
     private int ticLog = 0;
     private double energyDecayFactor = 0.994;
+    private double frequency;
 
     /**
      * Create a guitar string of the given frequency, using a sampling rate of
@@ -27,14 +28,10 @@ public class GuitarString {
      * @param frequency Frequency of the guitar string
      */
     public GuitarString(double frequency) {
-        int n = (int) (samplingRate / frequency);
-        buffer = new RingBuffer(n);
-        for (int i = 0; i < n; i++) {
-            try {
-                buffer.enqueue(0);
-            } catch (RingBuffer.BufferFullException ex) {
-                Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        this.frequency = frequency;
+        buffer = new RingBuffer((int) (samplingRate / frequency));
+        for (int i = 0; i < buffer.capacity(); i++) {
+            buffer.enqueue(0);
         }
     }
 
@@ -47,35 +44,28 @@ public class GuitarString {
     public GuitarString(double[] init) {
         buffer = new RingBuffer(init.length);
         for (double i : init) {
-            try {
-                buffer.enqueue((int) i);
-            } catch (RingBuffer.BufferFullException ex) {
-                Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            buffer.enqueue((int) i);
         }
     }
 
+    public void reset() {
+        buffer = new RingBuffer((int) (samplingRate / frequency));
+        for (int i = 0; i < buffer.capacity(); i++) {
+            buffer.enqueue(0);
+        }
+    }
+    
     /**
      * Sets the buffer to white noise.
      */
     public void pluck() {
         Random rand = new Random();
-        for (int i = 0; i < buffer.size(); i++) {
-            try {
-                buffer.dequeue();
-            } catch (RingBuffer.BufferEmptyException ex) {
-                Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            try {
-                double n = rand.nextDouble() / 2;
-                if(rand.nextBoolean()) {
-                    n *= -1;
-                }
-                buffer.enqueue(n);
-            } catch (RingBuffer.BufferFullException ex) {
-                Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        for (int i = 0; i < buffer.capacity(); i++) {
+            buffer.dequeue();
+        }
+        for (int i = 0; i < buffer.capacity(); i++) {
+            double n = rand.nextDouble() - 0.5;
+            buffer.enqueue(n);
         }
     }
 
@@ -83,23 +73,20 @@ public class GuitarString {
      * Advances the simulation by one time step.
      */
     public void tic() {
-        double newSample = 0;
-        
-        double firstSample = 0;
-        double secondSample = 0;
-        try {
-            firstSample = buffer.dequeue();
-            secondSample = buffer.peek();
-        } catch (RingBuffer.BufferEmptyException ex) {
-            Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        newSample = energyDecayFactor * (0.5 * firstSample * secondSample);
-        
-        try {
-            buffer.enqueue(newSample);
-        } catch (RingBuffer.BufferFullException ex) {
-            Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        double firstSample = buffer.dequeue();
+//        if(newSample != 0) {
+//            System.out.println(newSample);
+//        }
+        double secondSample = buffer.peek();
+//        if(newSample != 0) {
+//            System.out.println(newSample);
+//        }
+        double newSample = energyDecayFactor * (0.5 * (firstSample + secondSample));
+//        System.out.println(energyDecayFactor);
+//        if(newSample != 0) {
+//            System.out.println(newSample);
+//        }
+        buffer.enqueue(newSample);
         
         ticLog++;
     }
@@ -110,12 +97,8 @@ public class GuitarString {
      * @return current sound sample
      */
     public double sample() {
-        try {
-            return buffer.peek();
-        } catch (RingBuffer.BufferEmptyException ex) {
-            Logger.getLogger(GuitarString.class.getName()).log(Level.SEVERE, null, ex);
-            return 0;
-        }
+//        buffer.printBuffer();
+        return buffer.peek();
     }
 
     /**
