@@ -79,8 +79,8 @@ public class RingBuffer {
             System.err.println("Empty");
             return 0;
         }
-        double result = peek();
-        buffer.remove(result);
+        double result = buffer.get(0);
+        buffer.remove(0);
         return result;
     }
     
