@@ -12,36 +12,32 @@ import java.util.ArrayList;
  * @author atmarsh
  */
 public class GuitarHero {
-    
+
     private static String keyboardString = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
     private static ArrayList<GuitarString> strings;
-    
-    public GuitarHero() {
+
+    public static void main(String [] args) {
         strings = new ArrayList<>();
-        for(int i = 0; i < keyboardString.length(); i++) {
+        for (int i = 0; i < keyboardString.length(); i++) {
             strings.add(new GuitarString(440 * Math.pow(1.05956, i - 24)));
         }
-    }
-    
-    public void play(char key) {
-        int index = keyboardString.indexOf(key);
-        System.out.println(index);
-        strings.get(index);
-        double sample = 0;
-        for(GuitarString string : strings) {
-            sample += string.sample();
-            string.tic();
-        }
-        
-        StdAudio.play(sample);
-    }
-    
-    public void initialize() {
-        while(true) {
-            if(StdDraw.hasNextKeyTyped()) {
+
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
                 char key = StdDraw.nextKeyTyped();
-                play(key);
+                if(keyboardString.contains(key + "")) {
+                    int index = keyboardString.indexOf(key);
+                    strings.get(index).pluck();
+                }
             }
+
+            double sample = 0;
+            for (GuitarString string : strings) {
+                sample += string.sample();
+                string.tic();
+            }
+
+            StdAudio.play(sample);
         }
     }
 }
